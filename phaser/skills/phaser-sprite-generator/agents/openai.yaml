@@ -1,0 +1,4 @@
+interface:
+  display_name: "Phaser Sprite Generator"
+  short_description: "Generate, slice, and pack 2D sprites, spritesheets, tilesets, and atlases for Phaser games"
+  default_prompt: "Generate game-ready 2D art for a Phaser 3 game. First run the credential probe, load the required provider API reference, and load Phaser integration or image-generator workflow references when relevant. Use phaser-image-generator first if a concept/style reference/background/icon/logo would improve the result. Generate the sprite/spritesheet/tileset with a transparent background, slice the grid into frames and/or pack them into an atlas PNG + JSON, save the outputs, and report credential probe output, reference ledger, prompts, output paths, grid/transparency settings, and the Phaser load + frameConfig/atlas snippet."

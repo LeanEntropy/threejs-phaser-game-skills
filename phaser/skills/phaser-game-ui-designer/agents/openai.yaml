@@ -1,0 +1,4 @@
+interface:
+  display_name: "Phaser Game UI Designer"
+  short_description: "Design premium Phaser 3 (2D) game UI"
+  default_prompt: "Redesign this Phaser 3 game's HUD and menus so they are polished, readable, responsive, and genre-specific. Decide between a parallel UI Scene and a DOM overlay, set the Scale Manager mode and design resolution, first load the UI patterns reference, report the reference ledger, and include UI state, text-fit, safe-area, and touch-target evidence."

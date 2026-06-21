@@ -1,0 +1,25 @@
+{
+  "name": "phaser-vite-game",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "playwright test",
+    "verify:visual": "playwright test tests/visual.spec.ts",
+    "inspect:canvas": "node scripts/inspect-phaser-canvas.mjs"
+  },
+  "dependencies": {
+    "phaser": "^3.80.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.9.0",
+    "@types/pngjs": "^6.0.5",
+    "pngjs": "^7.0.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.13"
+  }
+}

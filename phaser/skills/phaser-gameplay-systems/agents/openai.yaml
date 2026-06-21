@@ -1,0 +1,4 @@
+interface:
+  display_name: "Phaser Gameplay Systems"
+  short_description: "Build playable Phaser 3 systems"
+  default_prompt: "Create or improve this Phaser 3 game's playable loop, scenes, architecture, mechanics, controls, camera, and feel with browser verification. First load the gameplay workflows reference, report the reference ledger, and include the gameplay checklist outcome."

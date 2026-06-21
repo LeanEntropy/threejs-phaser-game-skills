@@ -1,0 +1,23 @@
+# AAA 2D Browser Game Quality Gate
+
+- The game is immediately playable and not presented as a landing page.
+- The core loop has objective, scoring/progress, fail/retry, pacing, and feedback.
+- Screenshots do not read as a collection of default Graphics shapes, debug HUDs, or generic placeholder panels.
+- Unadorned rectangles, circles, triangles, flat single-color fills, and one static background band are not the dominant art language unless explicitly intentional.
+- UI is genre-specific, compact, readable during motion, responsive, runs in a parallel UI Scene, and includes needed modal states.
+- Player, threats, rewards, and objectives have distinct silhouettes and palette/feedback language.
+- Player/hero sprite has primary silhouette, secondary structure, tertiary detail, palette-ramp contrast, and state feedback.
+- Obstacle/enemy set includes at least three authored variants with unique telegraphs.
+- Reward/interactable set includes at least two authored variants with collection/interaction feedback.
+- World kit includes reusable modules/parallax layers and does not rely on one repeated band or flat fill.
+- The scene has foreground, midground, and background parallax depth instead of one flat play lane.
+- Lighting (Lights2D or faked), blend modes, parallax, and postFX clarify depth and mood without hiding gameplay.
+- Sprites/Graphics use authored factories, shared palette/atlas, reusable prop kits, and separately sized collision bodies.
+- Movement, camera, speed, impact, and restart loop feel tuned through play, with juice (squash & stretch, screen shake, hit-stop, flash) on key actions.
+- Audio/visual feedback exists for core actions and state transitions.
+- Mobile viewport preserves framing, safe areas, touch targets, and text fit.
+- Renderer diagnostics (batches, active objects, texture/atlas count, particle/tween counts, FPS) are reviewed when visual fidelity changes.
+- Visual scorecard passes: every category at least 2 and average at least 2.3. Any single category below 2 means not premium.
+- Build, browser run, console/page errors, screenshots, nonblank canvas, interaction, and responsive checks all pass.
+- A screenshot critique identifies no unresolved high-impact placeholder-quality blockers.
+- If any premium surface was intentionally deferred, the final report says which one and why.

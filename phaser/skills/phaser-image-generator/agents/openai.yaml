@@ -1,0 +1,4 @@
+interface:
+  display_name: "Phaser Image Generator"
+  short_description: "Generate concepts, sprite/tileset sources, backgrounds, icons, decals, and GUI art for Phaser games"
+  default_prompt: "Generate or edit a game-useful image asset for a Phaser 3 (2D) project. Run the credential probe before declaring the key unavailable, save outputs inside the project assets directory, and report the prompt, resolution, output path, intended runtime use, and whether the image feeds phaser-sprite-generator."

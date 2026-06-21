@@ -1,0 +1,17 @@
+{
+  "name": "phaser-game-skills",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check:scripts": "bash -n install.sh scripts/validate-skills.sh skills/phaser-game-director/scripts/probe_asset_credentials.sh && node --check skills/phaser-qa-release/scripts/inspect-phaser-canvas.mjs && python3 scripts/check-python-syntax.py scripts/check-python-syntax.py skills/phaser-gameplay-systems/scripts/create_phaser_game.py skills/phaser-sprite-generator/scripts/phaser_sprite_asset.py skills/phaser-image-generator/scripts/generate_image.py skills/phaser-audio-generator/scripts/phaser_audio_asset.py skills/phaser-game-director/scripts/audit_reference_report.py",
+    "validate:skills": "scripts/validate-skills.sh skills",
+    "install:codex": "./install.sh --codex",
+    "install:claude": "./install.sh --claude",
+    "install:all": "./install.sh --all"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "pngjs": "^7.0.0"
+  }
+}

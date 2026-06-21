@@ -1,0 +1,4 @@
+interface:
+  display_name: "Phaser QA Release"
+  short_description: "Verify and release Phaser 3 (2D) games"
+  default_prompt: "Verify this Phaser 3 game with browser QA, screenshots, canvas checks, responsive/mobile checks, production build, and release risk notes. First load the QA/release checklist reference, report the reference ledger, and include a pass/fail QA matrix."

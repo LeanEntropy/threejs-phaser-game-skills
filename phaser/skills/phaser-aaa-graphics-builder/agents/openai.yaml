@@ -1,0 +1,4 @@
+interface:
+  display_name: "Phaser AAA Graphics Builder"
+  short_description: "Upgrade Phaser 3 (2D) graphics quality"
+  default_prompt: "Upgrade this Phaser 3 game's 2D visuals with production graphics architecture, authored sprites/Graphics art, palette and Lights2D, particle VFX and juice (squash & stretch, screen shake, hit-stop, flash), parallax depth, render/postFX polish, scorecard gates, and diagnostics. First load the required graphics references. For premium asset categories, run the credential probe, load phaser-sprite-generator and/or phaser-image-generator before deciding procedural assets are enough, and produce real spritesheet/atlas/tileset or image output paths or blocker evidence. Report the reference ledger, external asset sourcing ledger, filled visual scorecard, and do not claim premium quality while any required reference, asset decision, evidence item, or scorecard category is missing."
