@@ -1,4 +1,8 @@
-# Three.js Game Skills
+# Three.js + Phaser Game Skills — a fast games prototyping framework
+
+> **This fork adds a Phaser 3 (2D) engine to complete the original Three.js suite — one toolkit for fast game prototyping in the browser, in 2D or 3D.** Point your agent at `phaser-game-director` for 2D games and `threejs-game-director` for 3D games; each routes gameplay, art, UI, asset/audio generation, debugging, and release verification automatically. See **[PHASER.md](PHASER.md)** for the 2D suite and how to keep this fork updated from upstream.
+>
+> Phaser 2D suite added by [Ohad Barzilay (Civax)](https://civax.net). Built on the original Three.js skills by [Majid Manzarpour](https://x.com/majidmanzarpour).
 
 Self-contained Codex and Claude Code skills for building playable, polished Three.js browser games. Install the skills, then ask your agent to use `threejs-game-director`; the director routes gameplay, graphics, UI, asset generation, audio, debugging, and release verification without requiring users to choose every specialist skill manually.
 
