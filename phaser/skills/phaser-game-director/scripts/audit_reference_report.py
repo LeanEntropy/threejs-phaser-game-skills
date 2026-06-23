@@ -41,22 +41,16 @@ PREMIUM_SCORECARD = [
     "automatic failures",
 ]
 
+# Only require that an asset-sourcing DECISION is recorded. Procedural/local art is
+# a complete answer; external generators are optional, so we never require credential
+# probes, generator-skill mentions, or generated-output evidence here.
 PREMIUM_ASSET_SOURCING = [
     "external asset sourcing",
-    "credential probe output",
-    "gemini_api_key=",
-    "sprite generator",
-    "image generator",
     "chosen sources",
-    "hero/player",
-    "world/sky/background",
-    "materials/textures/decals",
 ]
 
 PREMIUM_AUDIO = [
     "audio",
-    "audio generator",
-    "elevenlabs_api_key=",
 ]
 
 EXTERNAL_OUTPUT_PATTERNS = [
@@ -161,7 +155,7 @@ def main() -> int:
     parser.add_argument(
         "--audio",
         action="store_true",
-        help="Require generated/integrated audio evidence or a real blocker.",
+        help="Check the audio decision is addressed (generated, blocked, or explicitly omitted).",
     )
     args = parser.parse_args()
 
@@ -177,18 +171,21 @@ def main() -> int:
         missing.extend(missing_markers(text, PREMIUM_SCORECARD))
         missing.extend(missing_markers(text, PREMIUM_ASSET_SOURCING))
         missing.extend(missing_markers(text, VERIFICATION_MARKERS))
-        if not has_external_output_evidence(text) and not has_external_blocker(text):
-            missing.append("real external asset evidence or blocker")
-        if "not-needed" in text and "procedural" in text and not has_external_output_evidence(text) and not has_external_blocker(text):
-            missing.append("procedural/not-needed requires external output evidence or blocker")
+        # Procedural/local art is fully acceptable: no external/generated evidence required.
 
     if args.physics:
         missing.extend(missing_markers(text, PHYSICS_MARKERS))
 
     if args.audio:
         missing.extend(missing_markers(text, PREMIUM_AUDIO))
-        if not has_audio_output_evidence(text) and not has_audio_blocker(text):
-            missing.append("real audio asset evidence or blocker")
+        # Audio is optional. Pass if it was generated, blocked, or explicitly omitted.
+        audio_ok = (
+            has_audio_output_evidence(text)
+            or has_audio_blocker(text)
+            or any(m in text for m in ("no audio", "silent", "procedural audio", "audio omitted", "without audio"))
+        )
+        if not audio_ok:
+            missing.append("audio decision addressed (generated, blocked, or explicitly omitted)")
 
     if missing:
         print("Director report audit failed. Missing required markers:")

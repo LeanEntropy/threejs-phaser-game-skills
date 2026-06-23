@@ -7,8 +7,8 @@ Use this reference only after `phaser-game-director` has attempted to load the r
 - Do not claim another public skill was invoked unless its `SKILL.md` was actually loaded or the runner explicitly invoked it.
 - For broad game work, try to load all five sibling public skill files before implementation: gameplay systems, AAA graphics, UI designer, debug profiler, and QA release.
 - When external 2D art would help, also try to load `phaser-sprite-generator`; when 2D concepts/backgrounds/UI art would help, also try to load `phaser-image-generator`; when SFX/ambience/voice would help, also try to load `phaser-audio-generator`.
-- For premium/AAA/showcase/high-fidelity/less-basic work with vehicles, ships, characters, enemies, bosses, weapons, buildings, signature props, tilesets, skies/backgrounds, decals, logos, icons, GUI art, SFX, ambience, or voice, load the relevant generator skill before deciding it is not needed.
-- Before claiming a missing generator credential, run the director credential probe and paste the literal SET/MISSING output.
+- For premium/AAA/showcase/high-fidelity/less-basic work with vehicles, ships, characters, enemies, bosses, weapons, buildings, signature props, tilesets, skies/backgrounds, decals, logos, icons, GUI art, SFX, ambience, or voice, the relevant generator skill is an optional enhancement; procedural/local assets are a complete answer, so load a generator only when you want generated assets and the user is open to it.
+- The director credential probe is optional and diagnostic; a missing key simply means use procedural/local assets. If you do report a key as a blocker, paste the literal SET/MISSING output.
 - Record an external asset sourcing ledger before the graphics phase.
 - Record sibling skill loading paths or failure reasons in the ledger.
 - Load each phase's required reference files at phase entry. Do not defer references until final judgment.
@@ -42,17 +42,18 @@ External asset sourcing:
 - Audio assets generated: yes/no/not-needed, outputs or reason:
 ```
 
-Allowed reasons to skip actual external generation after loading the relevant skills:
+Procedural/local/hand-made assets are always a valid, complete final answer; reach for a generator only as an opt-in enhancement when it would materially improve the result AND the user wants it. Common reasons procedural is the right default include:
 
 - The user explicitly requested no external AI/assets or offline-only output.
-- Credential probe output shows the relevant key is `MISSING`.
+- Credential probe output shows the relevant key is `MISSING` (procedural is the natural path; the probe is optional).
 - A real API/network/quota error occurs after an attempted generation command; include the command and error summary.
 - The surface is a repeated low-value prop better handled by batched/procedural Graphics kits.
 - A non-hero repeated/support surface is already scoring 2+ and the ledger explains why external generation would not improve the active screenshot.
+- Procedural craft already meets the visual bar — quality is judged on the result, not on whether a generator was used.
 
-Do not write `not-needed` for generator skills before loading the relevant skill when trigger surfaces are present.
+`not-needed` / `procedural` is always a valid ledger entry for any surface, with no generator loaded; record which approach was chosen, but choosing procedural needs no excuse.
 
-For premium claims with hero surfaces such as player, enemy, boss, creature, vehicle, ship, weapon, building, tileset, or signature prop, procedural-only is not an allowed final answer unless the credential probe or attempted generation shows a real blocker. At least one hero/high-value asset must have real external evidence: a generated spritesheet/atlas path, a downloaded PNG/atlas JSON path, an image generator output path, or a documented hybrid chain. For premium active gameplay, missing audio assets must be reported as a remaining gap unless the user requested silent/offline-only output or the audio credential/API attempt is blocked.
+For premium claims with hero surfaces such as player, enemy, boss, creature, vehicle, ship, weapon, building, tileset, or signature prop, procedural-only is perfectly acceptable; if the user wants higher fidelity, generating a hero/high-value asset is one optional route. When you do generate, note the evidence: a generated spritesheet/atlas path, a downloaded PNG/atlas JSON path, an image generator output path, or a documented hybrid chain. For premium active gameplay, audio is informational: if omitted, note it as a possible gap, but it is never a hard requirement and procedural/silent output is acceptable.
 
 ## Required References
 
@@ -178,16 +179,16 @@ Run before the premium graphics pass when trigger surfaces exist.
 - Run the credential probe from the director skill scripts and paste output.
 - Load `phaser-sprite-generator`, `phaser-image-generator`, and/or `phaser-audio-generator` when their trigger surfaces exist.
 - Load sprite generator API notes, Phaser integration, image-generator workflow, and audio workflow references when relevant.
-- Decide source per high-value surface: procedural / phaser-image-generator / phaser-sprite-generator / phaser-audio-generator / hybrid.
-- Generate at least one high-value external output for premium hero surfaces unless the probe or attempted generation shows a real blocker.
-- Record generated spritesheet/atlas/tileset paths, atlas JSON paths, image generator output paths, audio output paths, or blocker evidence.
+- Decide source per high-value surface: procedural / phaser-image-generator / phaser-sprite-generator / phaser-audio-generator / hybrid. Procedural is a complete, fully acceptable choice.
+- Optionally generate high-value external outputs for premium hero surfaces when generated art would improve the result and the user wants it; procedural hero surfaces are acceptable.
+- Record the chosen approach per surface, plus any generated spritesheet/atlas/tileset paths, atlas JSON paths, image generator output paths, or audio output paths when generation was used.
 
 Exit evidence:
 
 - Credential probe output.
-- Skill/reference loading ledger for generator skills.
-- Asset sourcing ledger.
-- External outputs or blocker evidence.
+- Skill/reference loading ledger for generator skills (only when generation is used).
+- Asset sourcing ledger (records the choice: procedural or generated).
+- When generation was used, the external output paths. Procedural/local art needs none.
 
 ## Phase 4: AAA Graphics / Art
 
@@ -199,7 +200,7 @@ Use when screenshots look basic or the user asks for premium quality.
 - Use `phaser-image-generator` for concept/reference images, background/sky plates, parallax layers, logos, icons, decals, and source frames for the sprite generator when 2D source art would improve quality.
 - Use `phaser-sprite-generator` for high-value 2D art such as characters, enemies, bosses, vehicles, buildings, weapons, hero props, pickups, tilesets, spritesheets, and texture atlases when procedural Graphics code is not enough.
 - Use `phaser-audio-generator` for SFX, ambience loops, UI sounds, voice, conversion, and cleanup when generated audio would improve the playable loop.
-- If trigger surfaces exist, complete the external asset sourcing phase before deciding procedural code is enough.
+- If trigger surfaces exist, record the asset-sourcing choice per surface; procedural code is a complete answer, and a generator is an optional enhancement when the user wants higher fidelity.
 - Build authored forms: layered sprites, animation frames (squash & stretch, anticipation), tint/blend variation, trim/panel detail, decals, parallax depth, particle emitters, and physics-body footprints that stay simple.
 - Add pipelines/postFX (`addBloom`, `addGlow`, `addVignette`, custom `PostFXPipeline`), Lights2D + normal maps, color grading, and screen-space juice only after the authored forms exist.
 
@@ -280,7 +281,7 @@ For premium/AAA/showcase claims, all of these must be true:
 
 - Skill-loading ledger and reference ledger are present.
 - External asset sourcing ledger is present for premium/AAA/showcase graphics work.
-- Credential probe output plus external output evidence or blocker evidence is present for premium asset-category claims.
+- The asset-sourcing decision (procedural or generated) is recorded; generated surfaces include their output paths. Procedural/local art is fully acceptable and needs no probe output or blocker evidence.
 - Playable loop works through real input.
 - Active-play screenshots exist for desktop and mobile.
 - Visual scorecard has no category below 2 and average is at least 2.3.

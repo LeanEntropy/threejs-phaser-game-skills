@@ -19,7 +19,7 @@ Never store API keys in skill files or client-side game code. The script resolve
 
 With `--provider auto` (default), OpenAI is used when `OPENAI_API_KEY` resolves, otherwise Gemini. Copy `.env.example` (repo root) to `.env` or `~/.config/game-skills/.env` to set keys via the config file. Source-art generation supports either provider; slicing/packing/trim is provider-agnostic.
 
-Step 0 before declaring the key unavailable:
+A missing key is never a problem — procedural/local assets are a complete answer. Only if you choose to report a key as the reason generation was skipped, run this probe first so the report is accurate:
 
 ```bash
 bash ~/.claude/skills/phaser-game-director/scripts/probe_asset_credentials.sh
@@ -31,7 +31,7 @@ For Codex installs:
 bash ~/.codex/skills/phaser-game-director/scripts/probe_asset_credentials.sh
 ```
 
-Paste the literal `OPENAI_API_KEY=SET|MISSING` / `GEMINI_API_KEY=SET|MISSING` output in the report (the probe also checks the config file). Do not conclude the key is unavailable from a plain non-interactive shell until this probe has sourced the user's shell profiles.
+Paste the literal `OPENAI_API_KEY=SET|MISSING` / `GEMINI_API_KEY=SET|MISSING` output in the report when you report a key as the skip reason (the probe also checks the config file). Do not conclude the key is unavailable from a plain non-interactive shell until this probe has sourced the user's shell profiles. None of this is required when you simply choose procedural/local assets.
 
 When the probe says SET but `phaser_sprite_asset.py` reports a missing key, the key is exported in an interactive-only profile (e.g. `~/.zshrc`). Wrap script invocations the same way the probe does:
 

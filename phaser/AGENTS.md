@@ -34,9 +34,9 @@ This repo contains Codex and Claude Code workflow assets for Phaser 3 (2D) brows
 - Use `phaser-aaa-graphics-builder` when screenshots still look basic across multiple visual surfaces (flat sprites, no parallax, no particles, no lighting, no juice). Do not split that broad graphics problem into isolated small polish tasks.
 - Use focused UI passes for HUDs, menus, text fit, icon controls, and safe-area layout instead of treating interface craft as generic polish.
 - Use focused art passes for sprites, tilesets, atlases, parallax layers, particle FX, and pipeline/post-FX detail.
-- For premium/AAA/showcase/high-fidelity/less-basic work with characters, props, tilesets, backgrounds, skies, decals, logos, icons, GUI art, SFX, ambience, or voice, load `phaser-sprite-generator`, `phaser-image-generator`, and/or `phaser-audio-generator` before deciding procedural/generated assets are unnecessary.
-- Run the director credential probe before claiming sprite/image/audio generation credentials are unavailable. A missing key is not a valid blocker unless the SET/MISSING probe output is reported.
-- Report an external asset sourcing ledger for premium graphics work: procedural / phaser-image-generator / phaser-sprite-generator / hybrid per high-value surface, plus output paths or real blocker evidence.
+- For premium/AAA/showcase/high-fidelity/less-basic work with characters, props, tilesets, backgrounds, skies, decals, logos, icons, GUI art, SFX, ambience, or voice, `phaser-sprite-generator`, `phaser-image-generator`, and/or `phaser-audio-generator` are optional enhancements; procedural/local/hand-made assets are always a complete, fully acceptable answer, including for premium work. Reach for a generator only when generated assets would materially improve the result and the user wants them.
+- The director credential probe is optional and diagnostic. A missing key simply means use procedural/local assets, which is a complete answer; it is not a blocker. If you do report a key as a blocker, include the SET/MISSING probe output.
+- Report an external asset sourcing ledger for premium graphics work: the chosen source (procedural / phaser-image-generator / phaser-sprite-generator / hybrid) per high-value surface. When a generator was used, include its output paths; procedural/local choices need no output paths or blocker evidence.
 - Treat flat untextured rectangles, single-frame sprites, and generic stat-card HUDs as prototype placeholders unless the user explicitly wants that style.
 - Require active-play screenshot scoring for premium/AAA claims. A build is not premium if the visual scorecard has any category below 2.
 
@@ -53,8 +53,8 @@ For meaningful Phaser changes, gather evidence before claiming success:
 - interaction check for the main control path
 - performance snapshot when sprite counts, particles, shaders, or post-processing changed
 - UI text-fit, overlap, safe-area, and touch-target evidence when interface layout changed
-- external asset sourcing ledger when premium graphics include high-value sprite/tileset/background categories
-- credential probe output plus real external asset outputs or blocker evidence for premium asset-category claims
+- external asset sourcing ledger when premium graphics include high-value sprite/tileset/background categories (recording the chosen approach per surface; procedural is a complete answer)
+- when generation was used, the external asset output paths; procedural choices need no probe output or blocker evidence
 - visual scorecard before/after when the user asks for premium, AAA, showcase, or "less basic" graphics
 
 Use the scaffold's `npm run verify:visual` and `npm run inspect:canvas` when available, or `skills/phaser-qa-release/scripts/inspect-phaser-canvas.mjs` from this repo.

@@ -13,7 +13,7 @@ Providers: OpenAI's GPT-Image (`gpt-image-1`) and Google's Gemini image API. Sel
 
 ## When To Use
 
-Use this skill before procedural-only fallback (Graphics shapes + `generateTexture()`) when a Phaser game needs:
+This skill is an optional enhancement, not a requirement: procedural assets (Graphics shapes + `generateTexture()`) are always a complete, fully acceptable answer. Reach for it when generated art would materially improve the result and the user wants it, for example when a Phaser game needs:
 
 - Sprite-sheet and atlas source art for `phaser-sprite-generator`: characters, enemies, NPCs, bosses, vehicles, ships, weapons, props, pickups, projectiles, animation poses.
 - Tileset source images: ground/wall/platform tiles, terrain transitions, dungeon kits, decorative tiles, autotile sheets.
@@ -22,7 +22,7 @@ Use this skill before procedural-only fallback (Graphics shapes + `generateTextu
 - UI art: logos, faction marks, icons, item cards, ability badges, HUD/GUI panels, buttons, title art.
 - Existing-image edits, style variants, cleanup, palette alignment, or concept sheet refinements.
 
-For premium/AAA/showcase graphics work, generate at least one relevant image for high-value 2D surfaces or sprite/tileset sources unless the credential probe or a real generation attempt shows a blocker.
+For premium/AAA/showcase graphics work, generating images for high-value 2D surfaces or sprite/tileset sources is one optional route to higher fidelity; procedural/local art is a complete answer, so do this only when you want generated art and the user is open to it.
 
 ## API Key
 
@@ -34,7 +34,7 @@ Never store API keys in skill files or browser/game code. The script resolves a 
 
 With `--provider auto` (default), OpenAI is used when `OPENAI_API_KEY` resolves, otherwise Gemini. Copy `.env.example` (repo root) to `.env` or `~/.config/game-skills/.env` to set keys via the config file.
 
-Before declaring the key unavailable in a `phaser-game-director` or `phaser-aaa-graphics-builder` workflow, run the director credential probe and paste its literal SET/MISSING output (it reports `OPENAI_API_KEY` and `GEMINI_API_KEY`, and also checks the config file):
+A missing key is never a problem — procedural/local assets are a complete answer. You only need the probe if you choose to report a key as the reason generation was skipped: in that case, run the director credential probe and paste its literal SET/MISSING output so the report is accurate (it reports `OPENAI_API_KEY` and `GEMINI_API_KEY`, and also checks the config file):
 
 ```bash
 bash ~/.codex/skills/phaser-game-director/scripts/probe_asset_credentials.sh

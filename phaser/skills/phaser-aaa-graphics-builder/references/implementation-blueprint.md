@@ -33,11 +33,11 @@ Choose the asset path per surface:
 - `phaser-sprite-generator`: hero/player, characters, creatures, vehicles, buildings, weapons, signature props, pickups, bosses, full spritesheets (uniform frames), texture atlases (JSON), and tilesets.
 - Hybrid: image-generator concept/reference -> sprite-generator spritesheet/atlas slice+pack -> Phaser load -> procedural collision/particle/prop kit -> visual scorecard.
 
-For premium/AAA/showcase/high-fidelity/less-basic games, do not decide `phaser-sprite-generator` or `phaser-image-generator` is unnecessary before loading the relevant skill when the game includes characters, creatures, vehicles, ships, weapons, buildings, signature props, hero pickups, skies, tilesets, decals, logos, icons, or GUI art. Load first, run the credential probe, then document the tradeoff.
+For premium/AAA/showcase/high-fidelity/less-basic games, `phaser-sprite-generator` and `phaser-image-generator` are optional enhancements when the game includes characters, creatures, vehicles, ships, weapons, buildings, signature props, hero pickups, skies, tilesets, decals, logos, icons, or GUI art. Procedural/local art is a complete answer; load a generator only when you want generated art and the user is open to it, then document the tradeoff.
 
 Use `phaser-sprite-generator` when generated sprite/atlas fidelity will materially improve the active screenshot. Do not generate a unique sheet for every repeated small prop; use shared atlases, tinting, and Graphics-baked textures for volume.
 
-For premium hero surfaces, procedural-only is not a valid final choice unless a real blocker is recorded: missing key from the credential probe, API/network/quota error after an attempted command, user requested no external assets, or offline-only constraint. Repeated low-value props can stay procedural.
+For premium hero surfaces, procedural-only is a valid, complete final choice; a generator is one optional route to higher fidelity when the user wants it. Repeated low-value props are naturally procedural. Record which approach was chosen — procedural needs no excuse.
 
 Asset sourcing ledger:
 

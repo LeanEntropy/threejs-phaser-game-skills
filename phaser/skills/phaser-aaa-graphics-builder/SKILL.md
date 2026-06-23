@@ -1,6 +1,6 @@
 ---
 name: phaser-aaa-graphics-builder
-description: "Upgrade Phaser 3 games from basic/prototype 2D visuals to premium AAA-inspired browser graphics. Combines art-direction critique, procedural Graphics/sprite art building, mandatory external asset sourcing decisions, phaser-sprite-generator spritesheets/atlases/tilesets, phaser-image-generator concept/texture workflows, scene visual polish, palette/material/Lights2D libraries, world parallax/prop kits, particle VFX and juice, render/postFX pipeline, and visual scorecard gates. For premium 2D games (platformer, top-down, shoot-em-up, roguelike, arcade) with characters, vehicles, ships, weapons, buildings, signature props, skies, tilesets, decals, logos, icons, or GUI art, load the relevant generator skills before deciding procedural assets are enough."
+description: "Upgrade Phaser 3 games from basic/prototype 2D visuals to premium AAA-inspired browser graphics. Combines art-direction critique, procedural Graphics/sprite art building, optional external asset sourcing decisions, phaser-sprite-generator spritesheets/atlases/tilesets, phaser-image-generator concept/texture workflows, scene visual polish, palette/material/Lights2D libraries, world parallax/prop kits, particle VFX and juice, render/postFX pipeline, and visual scorecard gates. For premium 2D games (platformer, top-down, shoot-em-up, roguelike, arcade) with characters, vehicles, ships, weapons, buildings, signature props, skies, tilesets, decals, logos, icons, or GUI art, procedural/local assets are a complete answer; the generator skills are optional enhancements to reach for when generated art would materially improve the result and the user wants it."
 ---
 
 # Phaser AAA Graphics Builder
@@ -27,14 +27,14 @@ These references are required phase-entry gates, not optional reading:
 
 For broad "still looks basic", premium, AAA, high-fidelity, showcase, or less-basic graphics work, load all four references as the first action in the phase. Track them in a reference ledger with yes/no, path, and failure reason. Do not mark the graphics phase complete while any required reference is skipped.
 
-External asset sourcing gate:
+External asset sourcing (optional enhancement):
 
-- For premium/AAA/showcase/high-fidelity/less-basic graphics with a hero/player, character, creature, boss, vehicle, ship, building, weapon, signature prop, complex pickup, or hero environment piece, load `phaser-sprite-generator` before deciding procedural Graphics/atlas art is enough.
-- For premium/AAA/showcase/high-fidelity/less-basic graphics with concept needs, texture/tileset references, decals, logos, faction marks, icons, GUI art, skies, backgrounds, parallax plates, or title/menu art, load `phaser-image-generator` before deciding 2D external assets are not needed.
-- Run the director credential probe before using `key unavailable` as a skip reason and paste the SET/MISSING output.
-- Create an asset sourcing ledger for each high-value surface: procedural Graphics / phaser-image-generator / phaser-sprite-generator / hybrid, plus outputs or skip reason.
-- `not-needed` is valid only after the relevant skill was loaded and the ledger explains why external generation would not improve a non-hero support surface, or why the credential probe or attempted generation shows a real blocker.
-- For premium hero surfaces, procedural-only is not an allowed final answer unless there is real blocker evidence. At least one high-value surface must show a sprite-generator output (spritesheet/atlas/tileset path + JSON), an image-generator output path, or a documented hybrid chain.
+- For premium/AAA/showcase/high-fidelity/less-basic graphics with a hero/player, character, creature, boss, vehicle, ship, building, weapon, signature prop, complex pickup, or hero environment piece, `phaser-sprite-generator` is one optional route to higher fidelity; procedural Graphics/atlas art is a complete answer, so load it only when you want generated art and the user is open to it.
+- For premium/AAA/showcase/high-fidelity/less-basic graphics with concept needs, texture/tileset references, decals, logos, faction marks, icons, GUI art, skies, backgrounds, parallax plates, or title/menu art, `phaser-image-generator` is an optional enhancement; procedural/local 2D art is a complete answer.
+- The director credential probe is optional and diagnostic; a missing key simply means use procedural/local assets. If you do report a key as a blocker, paste the SET/MISSING output.
+- Create an asset sourcing ledger for each high-value surface: procedural Graphics / phaser-image-generator / phaser-sprite-generator / hybrid, recording the chosen approach (procedural needs no excuse) plus any outputs.
+- `not-needed` / `procedural` is always a valid ledger entry for any surface, with no generator loaded.
+- For premium hero surfaces, procedural-only is perfectly acceptable; if the user wants higher fidelity, a generator is one optional route. When you do generate, note the output (spritesheet/atlas/tileset path + JSON, an image-generator output path, or a documented hybrid chain). Quality is judged on the result, not on whether a generator was used.
 
 ## Workflow
 

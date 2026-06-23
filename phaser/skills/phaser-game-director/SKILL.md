@@ -1,6 +1,6 @@
 ---
 name: phaser-game-director
-description: "Primary entrypoint for complete Phaser 3 (2D) browser game creation, premium iteration, and automatic phase orchestration. Use by default for build-a-game, upgrade, polish, premium, AAA, high-fidelity, from-scratch, platformer, top-down, arcade, action, shoot-em-up, shmup, roguelike, brick/breakout, runner, puzzle, release-ready, or showcase requests. For broad work, first load sibling public skill files for gameplay systems, AAA graphics, UI, debug/profile, and QA/release. For premium games with characters, enemies, bosses, vehicles, ships, weapons, tilesets, signature props, backgrounds, skies, decals, logos, icons, GUI art, audio/SFX/voice needs, or less-basic graphics, load phaser-sprite-generator, phaser-image-generator, and/or phaser-audio-generator before deciding generated assets are unnecessary. Keep skill-loading, reference, asset-sourcing, and phase-execution ledgers so users do not choose skills manually."
+description: "Primary entrypoint for complete Phaser 3 (2D) browser game creation, premium iteration, and automatic phase orchestration. Use by default for build-a-game, upgrade, polish, premium, AAA, high-fidelity, from-scratch, platformer, top-down, arcade, action, shoot-em-up, shmup, roguelike, brick/breakout, runner, puzzle, release-ready, or showcase requests. For broad work, first load sibling public skill files for gameplay systems, AAA graphics, UI, debug/profile, and QA/release. For premium games with characters, enemies, bosses, vehicles, ships, weapons, tilesets, signature props, backgrounds, skies, decals, logos, icons, GUI art, audio/SFX/voice needs, or less-basic graphics, phaser-sprite-generator, phaser-image-generator, and/or phaser-audio-generator are optional enhancements you can reach for when generated assets would materially improve the result and the user wants them; procedural/local/hand-made assets are always a complete, fully acceptable answer. Keep skill-loading, reference, asset-sourcing, and phase-execution ledgers so users do not choose skills manually."
 ---
 
 # Phaser Game Director
@@ -23,15 +23,15 @@ For complete, premium, AAA, polished, high-fidelity, showcase, from-scratch, upg
 - `phaser-debug-profiler/SKILL.md`
 - `phaser-qa-release/SKILL.md`
 
-For premium, AAA, high-fidelity, showcase, complete, release-ready, or "less basic" game work, load this skill when the game includes or should include high-value 2D art assets: generated spritesheets, animation frame sets, texture atlases, tilesets, characters, enemies, bosses, buildings, vehicles, ships, weapons, signature props, complex pickups, or hero environment tiles. Do this before deciding whether procedural Phaser Graphics is enough:
+For premium, AAA, high-fidelity, showcase, complete, release-ready, or "less basic" game work, this skill is an optional enhancement when the game includes or should include high-value 2D art assets: generated spritesheets, animation frame sets, texture atlases, tilesets, characters, enemies, bosses, buildings, vehicles, ships, weapons, signature props, complex pickups, or hero environment tiles. Procedural Phaser Graphics is a complete answer; optionally load this skill if you want generated art and the user is open to it:
 
 - `phaser-sprite-generator/SKILL.md`
 
-For premium, AAA, high-fidelity, showcase, complete, release-ready, or "less basic" game work, load this skill when the game includes or should include concept/reference images, sprite-sheet sources, tileset sources, skies/backgrounds, parallax plates, logos, marks, icons, decals, GUI art, title/menu art, or 2D images that feed the sprite generator. Do this before deciding those assets are not needed:
+For premium, AAA, high-fidelity, showcase, complete, release-ready, or "less basic" game work, this skill is an optional enhancement when the game includes or should include concept/reference images, sprite-sheet sources, tileset sources, skies/backgrounds, parallax plates, logos, marks, icons, decals, GUI art, title/menu art, or 2D images that feed the sprite generator. Procedural/local art is a complete answer; optionally load this skill if you want generated images and the user is open to it:
 
 - `phaser-image-generator/SKILL.md`
 
-For premium, AAA, high-fidelity, showcase, complete, release-ready, or "less basic" game work, load this skill when the game includes or should include SFX, ambience, UI sounds, interaction audio, vehicle/weapon/boss sounds, announcer/dialogue, scratch-performance voice conversion, or audio cleanup. Do this before deciding generated audio is not needed:
+For premium, AAA, high-fidelity, showcase, complete, release-ready, or "less basic" game work, this skill is an optional enhancement when the game includes or should include SFX, ambience, UI sounds, interaction audio, vehicle/weapon/boss sounds, announcer/dialogue, scratch-performance voice conversion, or audio cleanup. Optionally load this skill if you want generated audio and the user is open to it:
 
 - `phaser-audio-generator/SKILL.md`
 
@@ -65,7 +65,7 @@ OPENAI_API_KEY=SET|MISSING
 ELEVENLABS_API_KEY=SET|MISSING
 ```
 
-The probe sources the user's shell profiles and also checks the config file (`$GAME_SKILLS_ENV` → `./.env` → `~/.config/game-skills/.env` → `~/.game-skills.env`), printing only SET/MISSING markers, never secret values. Image generation can use OpenAI (`gpt-image-1`) or Gemini, so either `OPENAI_API_KEY` or `GEMINI_API_KEY` being SET unblocks image/sprite generation. `key unavailable` is not a valid skip reason unless this probe output is shown.
+The probe sources the user's shell profiles and also checks the config file (`$GAME_SKILLS_ENV` → `./.env` → `~/.config/game-skills/.env` → `~/.game-skills.env`), printing only SET/MISSING markers, never secret values. Image generation can use OpenAI (`gpt-image-1`) or Gemini, so either `OPENAI_API_KEY` or `GEMINI_API_KEY` being SET enables image/sprite generation if you opt into it. The probe is an optional diagnostic, not a gate: a missing key simply means use procedural/local assets, which is a complete answer. If you do report a key as a blocker, show this probe output so the report is accurate.
 
 For broad or premium game work, create an asset sourcing ledger before the graphics phase:
 
@@ -86,17 +86,18 @@ External asset sourcing:
 - Audio assets generated: yes/no/not-needed, outputs or reason:
 ```
 
-Allowed reasons to skip actual external generation after loading the skills:
+Procedural/local/hand-made assets are always a valid, complete final answer for any surface — no generator needs to be loaded or attempted to justify that choice. Reach for a generator only as an opt-in enhancement when it would materially improve the result AND the user wants it. Common reasons procedural is the right default include:
 
 - The user explicitly requested no external AI/assets or offline-only output.
-- Credential probe output shows the relevant key is `MISSING`.
+- Credential probe output shows the relevant key is `MISSING` (procedural is the natural path; the probe is optional).
 - A real API/network/quota error occurs after an attempted generation command; include the command and error summary.
 - The surface is a repeated low-value prop better handled by batched/procedural Graphics kits.
 - A non-hero repeated/support surface is already scoring 2+ in the visual scorecard and the asset sourcing ledger explains why external generation would not improve the active screenshot.
+- Procedural craft already meets the visual bar — quality is judged on the result, not on whether a generator was used.
 
-If the game includes vehicles, ships, characters, enemies, bosses, weapons, buildings, tilesets, sky/background art, logos/icons, decals, GUI art, or audio/SFX/voice needs, `not-needed` is not a valid ledger entry until the relevant generator skill has been loaded and the asset sourcing ledger explains the tradeoff. For premium claims, at least one high-value visual asset surface should use `phaser-image-generator`, `phaser-sprite-generator`, or a documented hybrid unless an allowed skip reason blocks it.
+`not-needed` / `procedural` is always a valid ledger entry, for any surface, with no generator loaded — record which approach was chosen and why, but choosing procedural needs no excuse. For premium claims, a generator is one optional route to higher fidelity; use `phaser-image-generator`, `phaser-sprite-generator`, or a documented hybrid only when you want generated art and it would improve the active screenshot.
 
-For premium claims with hero surfaces such as player, enemy, boss, creature, vehicle, ship, weapon, building, tileset, or signature prop, procedural-only is not an allowed final answer unless the credential probe or attempted generation shows a real blocker. At least one hero/high-value asset must have real external evidence: a generated spritesheet/atlas path, a downloaded PNG/atlas JSON path, an image generator output path, or a documented hybrid chain. For premium claims that include active gameplay, audio-only omission must be reported as a remaining gap unless the user explicitly asked for silent/offline output or `ELEVENLABS_API_KEY` is blocked.
+For premium claims with hero surfaces such as player, enemy, boss, creature, vehicle, ship, weapon, building, tileset, or signature prop, procedural-only is perfectly acceptable; if the user wants higher fidelity, generating a hero/high-value asset is one optional route. When you do generate, note the evidence in the report: a generated spritesheet/atlas path, a downloaded PNG/atlas JSON path, an image generator output path, or a documented hybrid chain. For premium claims that include active gameplay, audio is informational: if omitted, note it as a possible gap, but it is never a hard requirement and procedural/silent output is acceptable.
 
 ## Mandatory Reference Gate
 
@@ -200,7 +201,7 @@ A phase is done only with implementation plus verification evidence.
 
 - `phaser-gameplay-systems`: first playable slice, architecture, mechanics, entities, input, camera, controls, game feel.
 - Physics selection: engine choice (Arcade vs Matter), fixed/semi-fixed timestep, collider/overlap strategy, sensors, body sizing, world bounds, and QA for physics-heavy games.
-- External asset sourcing: credential probe, generator skill loading, asset source decision, generated spritesheet/atlas/tileset output files or blocker evidence. This phase must be done before `phaser-aaa-graphics-builder` can be marked done for premium graphics work.
+- External asset sourcing (optional): only if the user wants generated art — an optional credential probe, generator skill loading, and the resulting output files. Procedural/local art needs none of this; recording the asset-source decision (procedural or generated) is sufficient and is not a prerequisite for `phaser-aaa-graphics-builder`.
 - `phaser-aaa-graphics-builder`: basic-looking screenshots, sprite/atlas architecture, parallax, particles/VFX, pipelines/postFX, Lights2D, juice, visual scorecard.
 - `phaser-game-ui-designer`: HUDs, menus, overlays, responsive UI, icons, safe areas, UI states, parallel UI Scene.
 - `phaser-debug-profiler`: blank/black canvas, scene/render/runtime bugs, loader failures, scale/resize, mobile input/render bugs, performance profiling.
@@ -243,8 +244,8 @@ The scorecard must use the exact categories from `phaser-aaa-graphics-builder/re
 - Main input/objective/fail or restart path.
 - Visual scorecard for premium/AAA claims.
 - External asset sourcing ledger for premium/AAA or less-basic graphics claims.
-- Credential probe output and real external asset outputs or blocker evidence for premium/AAA asset-category claims.
-- Audio matrix/generated audio evidence or a reported blocker for premium active gameplay claims.
+- Asset-sourcing decision recorded (procedural or generated); when generation was used, the output paths. Procedural/local art is a complete answer and needs no probe output or blocker evidence.
+- Audio is optional; if omitted, it may be noted as a possible gap, never a blocker (procedural/silent output is acceptable).
 - Renderer diagnostics when graphics changed.
 - Final ledger with evidence and remaining blockers.
 
@@ -256,7 +257,7 @@ When shell tools are available, draft the final evidence report to a temporary m
 python3 <director-skill-dir>/scripts/audit_reference_report.py --premium /path/to/final-report.md
 ```
 
-Use `--premium` for premium, AAA, showcase, high-fidelity, polished, complete, release-ready, or "less basic" claims. Add `--physics` for physics-heavy games such as pinball, marble/physics puzzles, Matter-based stacking/ragdoll games, mini-golf, or games with many sensors/colliders. Add `--audio` when generated or integrated audio is in scope, and for premium active-gameplay claims unless the user requested silent/offline-only output. If the audit fails, fix the missing report sections or state the exact blocker instead of claiming completion. If the script is unavailable, manually enforce the same required sections: skill-loading ledger, reference ledger, external asset/audio sourcing ledger, phase checklist, visual scorecard, physics/audio diagnostics when relevant, verification evidence, and remaining risks.
+Use `--premium` for premium, AAA, showcase, high-fidelity, polished, complete, release-ready, or "less basic" claims. Add `--physics` for physics-heavy games such as pinball, marble/physics puzzles, Matter-based stacking/ragdoll games, mini-golf, or games with many sensors/colliders. Add `--audio` when generated or integrated audio is in scope. Audio is informational, not mandatory: for premium active-gameplay claims you may note its absence as a possible gap, but silent/procedural output is acceptable and the user need not generate audio. If the audit fails, fix the missing report sections or state the exact blocker instead of claiming completion. If the script is unavailable, manually enforce the same required sections: skill-loading ledger, reference ledger, external asset/audio sourcing ledger, phase checklist, visual scorecard, physics/audio diagnostics when relevant, verification evidence, and remaining risks.
 
 ## Final Response
 
