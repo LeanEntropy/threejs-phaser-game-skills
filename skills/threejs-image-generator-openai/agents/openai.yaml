@@ -1,0 +1,8 @@
+name: Three.js Image Generator (OpenAI / GPT-Image)
+description: Generate and edit 2D image assets for Three.js games using OpenAI gpt-image-1 (concepts, textures, skies, decals, icons, GUI art, image-to-3D inputs).
+default_prompt: >-
+  Use OpenAI gpt-image-1 (via scripts/generate_image.py --provider openai) to generate the
+  needed 2D image assets for this Three.js game — concept sheets, texture/sky/decal plates,
+  icons, GUI art, and image-to-3D source images for threejs-3d-generator. Resolve OPENAI_API_KEY
+  from env or the config file; if missing, report the credential probe output and fall back to
+  procedural/local assets.

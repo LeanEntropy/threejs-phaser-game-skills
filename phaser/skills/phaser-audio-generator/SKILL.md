@@ -26,12 +26,15 @@ For premium/AAA/showcase game work, audio is not cosmetic. Generate or integrate
 
 ## API Key
 
-Never store API keys in skill files or browser/game code. The script checks:
+Never store API keys in skill files or browser/game code. The script resolves the key in this order:
 
-1. `--api-key`
-2. `ELEVENLABS_API_KEY`
+1. `--api-key` (explicit flag)
+2. `ELEVENLABS_API_KEY` environment variable
+3. a config file (KEY=value lines), searched in order: `$GAME_SKILLS_ENV` → `./.env` → `~/.config/game-skills/.env` → `~/.game-skills.env`
 
-Before declaring the key unavailable in a `phaser-game-director` workflow, run the director credential probe and paste its literal SET/MISSING output:
+Copy `.env.example` (repo root) to `.env` or `~/.config/game-skills/.env` to set `ELEVENLABS_API_KEY` via the config file instead of (or alongside) an env var.
+
+Before declaring the key unavailable in a `phaser-game-director` workflow, run the director credential probe and paste its literal SET/MISSING output (it also checks the config file):
 
 ```bash
 bash ~/.codex/skills/phaser-game-director/scripts/probe_asset_credentials.sh

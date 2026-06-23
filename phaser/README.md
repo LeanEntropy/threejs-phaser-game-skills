@@ -52,14 +52,37 @@ Never commit API keys or put them in browser-side game code.
 
 | Provider | Skill | Environment variable | Use cases |
 | --- | --- | --- | --- |
-| Gemini image API | `phaser-image-generator`, `phaser-sprite-generator` | `GEMINI_API_KEY` | Concept art, sprites, spritesheets, tilesets, textures, backgrounds, skies, decals, icons, logos, GUI art. |
+| OpenAI GPT-Image (`gpt-image-1`) | `phaser-image-generator`, `phaser-sprite-generator` | `OPENAI_API_KEY` | Concept art, sprites, spritesheets, tilesets, textures, backgrounds, skies, decals, icons, logos, GUI art (transparent-background option). |
+| Gemini image API | `phaser-image-generator`, `phaser-sprite-generator` | `GEMINI_API_KEY` | Same image/sprite surfaces as above, Gemini backend. |
 | ElevenLabs API | `phaser-audio-generator` | `ELEVENLABS_API_KEY` | SFX, ambience loops, UI sounds, announcer lines, dialogue TTS, voice conversion, audio cleanup. |
 
 Set keys in your shell profile, then restart your terminal:
 
 ```bash
+export OPENAI_API_KEY="..."
 export GEMINI_API_KEY="..."
 export ELEVENLABS_API_KEY="..."
+```
+
+### Config file & providers
+
+Keys for all generator scripts resolve in order: **explicit flag → environment
+variable → a config file**. The config file is searched in this order (KEY=value
+lines): `$GAME_SKILLS_ENV` → `./.env` → `~/.config/game-skills/.env` →
+`~/.game-skills.env`. Copy the repo-root `.env.example` to one of those paths and
+fill in the keys.
+
+The image and sprite generators support two providers, selected with
+`--provider {auto,openai,gemini}` (default `auto` = OpenAI when `OPENAI_API_KEY`
+resolves, else Gemini). OpenAI uses `gpt-image-1` with `--size`/`--quality`/
+`--background transparent`; Gemini uses `--resolution {1K,2K,4K}`.
+
+Upstream Three.js scripts read environment variables only. To bridge config-file
+keys into the shell so those scripts (and any tool) can see them, source the
+repo-root helper before running:
+
+```bash
+source ../load-keys.sh   # from inside phaser/; exports config-file keys into the shell
 ```
 
 The director skill includes a credential probe that sources common shell profiles before

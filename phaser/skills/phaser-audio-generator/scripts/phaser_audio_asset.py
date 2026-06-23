@@ -29,10 +29,71 @@ def eprint(message: str) -> None:
     print(message, file=sys.stderr)
 
 
+# ---------------------------------------------------------------------------
+# Key / config resolution (matches the phaser image/sprite generators)
+# ---------------------------------------------------------------------------
+def _config_paths() -> list[Path]:
+    """Search order for a KEY=value config file holding API keys."""
+    paths: list[Path] = []
+    explicit = os.environ.get("GAME_SKILLS_ENV")
+    if explicit:
+        paths.append(Path(explicit))
+    paths.append(Path.cwd() / ".env")
+    home = Path.home()
+    paths.append(home / ".config" / "game-skills" / ".env")
+    paths.append(home / ".game-skills.env")
+    return paths
+
+
+_CONFIG_KEYS: dict[str, str] | None = None
+
+
+def _load_config_keys() -> dict[str, str]:
+    """Parse the first readable config file(s); earliest path wins per key."""
+    keys: dict[str, str] = {}
+    for path in _config_paths():
+        try:
+            if not path.is_file():
+                continue
+            for raw in path.read_text(encoding="utf-8").splitlines():
+                line = raw.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if line.startswith("export "):
+                    line = line[len("export "):]
+                if "=" not in line:
+                    continue
+                name, value = line.split("=", 1)
+                name = name.strip()
+                value = value.strip().strip('"').strip("'")
+                if name and name not in keys:
+                    keys[name] = value
+        except OSError:
+            continue
+    return keys
+
+
+def resolve_key(name: str, provided: str | None = None) -> str | None:
+    """Resolve a key: explicit arg, then env var, then config file."""
+    global _CONFIG_KEYS
+    if provided:
+        return provided
+    env_value = os.environ.get(name)
+    if env_value:
+        return env_value
+    if _CONFIG_KEYS is None:
+        _CONFIG_KEYS = _load_config_keys()
+    return _CONFIG_KEYS.get(name)
+
+
 def api_key(args: argparse.Namespace) -> str:
-    key = getattr(args, "api_key", None) or os.environ.get("ELEVENLABS_API_KEY")
+    key = resolve_key("ELEVENLABS_API_KEY", getattr(args, "api_key", None))
     if not key:
-        raise AudioGeneratorError("Missing API key. Set ELEVENLABS_API_KEY or pass --api-key.")
+        raise AudioGeneratorError(
+            "Missing API key. Pass --api-key, set ELEVENLABS_API_KEY, or add it to a "
+            "config file (./.env, ~/.config/game-skills/.env, ~/.game-skills.env, or "
+            "$GAME_SKILLS_ENV)."
+        )
     return key
 
 
@@ -148,7 +209,7 @@ def voice_settings(args: argparse.Namespace) -> dict[str, Any] | None:
 
 
 def cmd_probe(args: argparse.Namespace) -> int:
-    marker = "SET" if (args.api_key or os.environ.get("ELEVENLABS_API_KEY")) else "MISSING"
+    marker = "SET" if resolve_key("ELEVENLABS_API_KEY", args.api_key) else "MISSING"
     print(f"ELEVENLABS_API_KEY={marker}")
     if args.validate and marker == "SET":
         data = request_bytes("GET", "/user", api_key(args))

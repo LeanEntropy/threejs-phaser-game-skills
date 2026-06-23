@@ -61,10 +61,11 @@ Expected output shape:
 
 ```text
 GEMINI_API_KEY=SET|MISSING
+OPENAI_API_KEY=SET|MISSING
 ELEVENLABS_API_KEY=SET|MISSING
 ```
 
-The probe sources the user's shell profiles and prints only SET/MISSING markers, never secret values. `key unavailable` is not a valid skip reason unless this probe output is shown.
+The probe sources the user's shell profiles and also checks the config file (`$GAME_SKILLS_ENV` → `./.env` → `~/.config/game-skills/.env` → `~/.game-skills.env`), printing only SET/MISSING markers, never secret values. Image generation can use OpenAI (`gpt-image-1`) or Gemini, so either `OPENAI_API_KEY` or `GEMINI_API_KEY` being SET unblocks image/sprite generation. `key unavailable` is not a valid skip reason unless this probe output is shown.
 
 For broad or premium game work, create an asset sourcing ledger before the graphics phase:
 

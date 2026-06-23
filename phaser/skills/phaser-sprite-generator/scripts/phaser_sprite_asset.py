@@ -3,12 +3,13 @@
 # requires-python = ">=3.10"
 # dependencies = [
 #     "google-genai>=1.0.0",
+#     "openai>=1.50.0",
 #     "pillow>=10.0.0",
 # ]
 # ///
 """
-Generate game-ready 2D art for Phaser 3 using Google's Gemini image API plus
-local Pillow (PIL) image processing.
+Generate game-ready 2D art for Phaser 3 using either OpenAI (gpt-image-1) or
+Google's Gemini image API, plus local Pillow (PIL) image processing.
 
 Three subcommands:
 
@@ -50,22 +51,88 @@ from pathlib import Path
 
 
 # ---------------------------------------------------------------------------
-# API key handling (ported from the image-generator pattern)
+# API key / config resolution (matches the phaser image generator)
 # ---------------------------------------------------------------------------
+def _config_paths():
+    """Search order for a KEY=value config file holding API keys."""
+    paths = []
+    explicit = os.environ.get("GAME_SKILLS_ENV")
+    if explicit:
+        paths.append(Path(explicit))
+    paths.append(Path.cwd() / ".env")
+    home = Path.home()
+    paths.append(home / ".config" / "game-skills" / ".env")
+    paths.append(home / ".game-skills.env")
+    return paths
+
+
+_CONFIG_KEYS = None
+
+
+def _load_config_keys():
+    """Parse the first readable config file(s); earliest path wins per key."""
+    keys = {}
+    for path in _config_paths():
+        try:
+            if not path.is_file():
+                continue
+            for raw in path.read_text(encoding="utf-8").splitlines():
+                line = raw.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if line.startswith("export "):
+                    line = line[len("export "):]
+                if "=" not in line:
+                    continue
+                name, value = line.split("=", 1)
+                name = name.strip()
+                value = value.strip().strip('"').strip("'")
+                if name and name not in keys:
+                    keys[name] = value
+        except OSError:
+            continue
+    return keys
+
+
+def resolve_key(name, provided=None):
+    """Resolve a key: explicit arg, then env var, then config file."""
+    global _CONFIG_KEYS
+    if provided:
+        return provided
+    env_value = os.environ.get(name)
+    if env_value:
+        return env_value
+    if _CONFIG_KEYS is None:
+        _CONFIG_KEYS = _load_config_keys()
+    return _CONFIG_KEYS.get(name)
+
+
+def resolve_provider(requested, openai_key, gemini_key):
+    """Pick a provider: explicit request, else auto (OpenAI preferred)."""
+    if requested and requested != "auto":
+        return requested
+    if openai_key:
+        return "openai"
+    if gemini_key:
+        return "gemini"
+    return None
+
+
 def get_api_key(provided_key):
-    """Get API key from argument first, then environment."""
-    if provided_key:
-        return provided_key
-    return os.environ.get("GEMINI_API_KEY")
+    """Get the Gemini API key from argument, env, then config file."""
+    return resolve_key("GEMINI_API_KEY", provided_key)
 
 
 def require_api_key(provided_key):
     api_key = get_api_key(provided_key)
     if not api_key:
-        print("Error: No API key provided.", file=sys.stderr)
+        print("Error: No Gemini API key found.", file=sys.stderr)
         print("Please either:", file=sys.stderr)
         print("  1. Provide --api-key argument", file=sys.stderr)
         print("  2. Set GEMINI_API_KEY environment variable", file=sys.stderr)
+        print("  3. Add GEMINI_API_KEY to a config file (./.env, "
+              "~/.config/game-skills/.env, ~/.game-skills.env, or $GAME_SKILLS_ENV)",
+              file=sys.stderr)
         sys.exit(1)
     return api_key
 
@@ -130,25 +197,141 @@ def trim_to_content(image, PILImage):
 
 
 # ---------------------------------------------------------------------------
+# Provider: OpenAI gpt-image-1 (returns raw PNG bytes)
+# ---------------------------------------------------------------------------
+def generate_openai_bytes(args, api_key, full_prompt):
+    """Generate or edit a sprite source image with OpenAI gpt-image-1.
+
+    Returns raw PNG bytes (decoded from data[0].b64_json) for the shared
+    Pillow post-processing path to handle (alpha keying, trimming, slicing).
+    """
+    import base64
+    from openai import OpenAI
+
+    client = OpenAI(api_key=api_key)
+    model = args.model or "gpt-image-1"
+    size = args.size or "1024x1024"
+    background = args.background if args.background and args.background != "auto" else "auto"
+
+    if args.input_image:
+        print(f"Editing sprite art with {model} ({size}, quality={args.quality})...")
+        with open(args.input_image, "rb") as handle:
+            result = client.images.edit(
+                model=model,
+                image=handle,
+                prompt=full_prompt,
+                size=size,
+                quality=args.quality,
+                background=background,
+                input_fidelity="high",
+            )
+    else:
+        print(f"Generating sprite art with {model} ({size}, quality={args.quality})...")
+        result = client.images.generate(
+            model=model,
+            prompt=full_prompt,
+            size=size,
+            quality=args.quality,
+            background=background,
+            output_format="png",
+            n=1,
+        )
+
+    data = result.data or []
+    b64 = data[0].b64_json if data else None
+    if not b64:
+        print("Error: OpenAI returned no image data.", file=sys.stderr)
+        sys.exit(1)
+    return base64.b64decode(b64)
+
+
+# ---------------------------------------------------------------------------
+# Provider: Gemini (returns raw image bytes)
+# ---------------------------------------------------------------------------
+def generate_gemini_bytes(args, api_key, full_prompt, PILImage):
+    """Generate or edit a sprite source image with Gemini. Returns raw bytes."""
+    from google import genai
+    from google.genai import types
+    import base64
+
+    client = genai.Client(api_key=api_key)
+
+    # Optional input image for edit/variation (same pattern as image-generator).
+    input_image = None
+    if args.input_image:
+        if PILImage is None:
+            print("Error: --input-image requires Pillow.", file=sys.stderr)
+            sys.exit(1)
+        try:
+            input_image = PILImage.open(args.input_image)
+            print(f"Loaded input image: {args.input_image}")
+        except Exception as e:
+            print(f"Error loading input image: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    contents = [input_image, full_prompt] if input_image is not None else full_prompt
+    print(f"Generating sprite art at {args.resolution}...")
+
+    try:
+        response = client.models.generate_content(
+            model=args.model or "gemini-3-pro-image-preview",
+            contents=contents,
+            config=types.GenerateContentConfig(
+                response_modalities=["TEXT", "IMAGE"],
+                image_config=types.ImageConfig(image_size=args.resolution),
+            ),
+        )
+    except Exception as e:
+        print(f"Error generating image: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    for part in response.parts:
+        if part.text is not None:
+            print(f"Model response: {part.text}")
+        elif part.inline_data is not None:
+            image_data = part.inline_data.data
+            if isinstance(image_data, str):
+                image_data = base64.b64decode(image_data)
+            return image_data
+
+    print("Error: No image was generated in the response.", file=sys.stderr)
+    sys.exit(1)
+
+
+# ---------------------------------------------------------------------------
 # Subcommand: generate
 # ---------------------------------------------------------------------------
 def cmd_generate(args):
-    api_key = require_api_key(args.api_key)
-
-    # Import here after the key check to avoid a slow import on error.
-    from google import genai
-    from google.genai import types
-    from io import BytesIO
-
     PILImage = try_import_pillow()  # optional for generate
 
-    client = genai.Client(api_key=api_key)
+    # Resolve keys and provider (OpenAI preferred under 'auto' when available).
+    openai_key = resolve_key("OPENAI_API_KEY", args.openai_key)
+    gemini_key = resolve_key("GEMINI_API_KEY", args.api_key)
+    provider = resolve_provider(args.provider, openai_key, gemini_key)
+    if provider is None:
+        print("Error: No image API key found.", file=sys.stderr)
+        print("Provide one of:", file=sys.stderr)
+        print("  - --api-key (Gemini) / --openai-key (OpenAI)", file=sys.stderr)
+        print("  - env OPENAI_API_KEY or GEMINI_API_KEY", file=sys.stderr)
+        print("  - a config file: ./.env, ~/.config/game-skills/.env, ~/.game-skills.env,",
+              file=sys.stderr)
+        print("    or the path in $GAME_SKILLS_ENV (KEY=value lines)", file=sys.stderr)
+        sys.exit(1)
+
+    if provider == "openai":
+        if not openai_key:
+            print("Error: provider 'openai' selected but no OPENAI_API_KEY found.", file=sys.stderr)
+            sys.exit(1)
+    else:
+        if not gemini_key:
+            print("Error: provider 'gemini' selected but no GEMINI_API_KEY found.", file=sys.stderr)
+            sys.exit(1)
 
     output_path = Path(args.filename)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Build a sprite-aware prompt. Transparent-background and grid hints make
-    # Gemini output far more usable as game art.
+    # the generated output far more usable as game art.
     prompt = args.prompt
     extra = []
     if args.transparent:
@@ -170,84 +353,53 @@ def cmd_generate(args):
         extra.append(args.style)
     full_prompt = prompt + ". " + ", ".join(extra) + "."
 
-    # Optional input image for edit/variation (same pattern as image-generator).
-    input_image = None
-    if args.input_image:
-        if PILImage is None:
-            print("Error: --input-image requires Pillow.", file=sys.stderr)
-            sys.exit(1)
+    # Fetch raw image bytes from the selected provider.
+    if provider == "openai":
         try:
-            input_image = PILImage.open(args.input_image)
-            print(f"Loaded input image: {args.input_image}")
+            image_data = generate_openai_bytes(args, openai_key, full_prompt)
+        except SystemExit:
+            raise
         except Exception as e:
-            print(f"Error loading input image: {e}", file=sys.stderr)
+            print(f"Error generating image (openai): {e}", file=sys.stderr)
             sys.exit(1)
-
-    contents = [input_image, full_prompt] if input_image is not None else full_prompt
-    print(f"Generating sprite art at {args.resolution}...")
-
-    try:
-        response = client.models.generate_content(
-            model="gemini-3-pro-image-preview",
-            contents=contents,
-            config=types.GenerateContentConfig(
-                response_modalities=["TEXT", "IMAGE"],
-                image_config=types.ImageConfig(image_size=args.resolution),
-            ),
-        )
-    except Exception as e:
-        print(f"Error generating image: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    image_saved = False
-    for part in response.parts:
-        if part.text is not None:
-            print(f"Model response: {part.text}")
-        elif part.inline_data is not None:
-            image_data = part.inline_data.data
-            if isinstance(image_data, str):
-                import base64
-                image_data = base64.b64decode(image_data)
-
-            if PILImage is None:
-                # Degrade gracefully: write the raw bytes, skip processing.
-                output_path.write_bytes(image_data)
-                print(
-                    "Note: Pillow is not installed. Saved the raw generated image "
-                    "without alpha enforcement, trimming, or slicing.",
-                    file=sys.stderr,
-                )
-                print("Install Pillow to enable --transparent/--trim and the "
-                      "sheet/atlas subcommands: pip install pillow", file=sys.stderr)
-                image_saved = True
-                continue
-
-            image = PILImage.open(BytesIO(image_data)).convert("RGBA")
-
-            # Enforce transparent background by keying out the dominant corner
-            # color when requested (Gemini often returns a near-solid backdrop).
-            if args.transparent:
-                key = hex_to_rgb(args.key_color) if args.key_color else image.getpixel((0, 0))[:3]
-                image = color_key_to_alpha(image, key, args.tolerance, PILImage)
-
-            if args.trim:
-                image, _ = trim_to_content(image, PILImage)
-
-            image.save(str(output_path), "PNG")
-            image_saved = True
-
-    if image_saved:
-        print(f"\nImage saved: {output_path.resolve()}")
-        if args.columns and args.rows and (args.columns > 1 or args.rows > 1):
-            print(
-                "Next: slice into frames with\n"
-                f"  phaser_sprite_asset.py sheet --image {output_path} "
-                f"--columns {args.columns} --rows {args.rows} "
-                f"--out-dir {output_path.with_suffix('')}-frames"
-            )
     else:
-        print("Error: No image was generated in the response.", file=sys.stderr)
-        sys.exit(1)
+        image_data = generate_gemini_bytes(args, gemini_key, full_prompt, PILImage)
+
+    # Shared post-processing (provider-agnostic).
+    if PILImage is None:
+        # Degrade gracefully: write the raw bytes, skip processing.
+        output_path.write_bytes(image_data)
+        print(
+            "Note: Pillow is not installed. Saved the raw generated image "
+            "without alpha enforcement, trimming, or slicing.",
+            file=sys.stderr,
+        )
+        print("Install Pillow to enable --transparent/--trim and the "
+              "sheet/atlas subcommands: pip install pillow", file=sys.stderr)
+    else:
+        from io import BytesIO
+
+        image = PILImage.open(BytesIO(image_data)).convert("RGBA")
+
+        # Enforce transparent background by keying out the dominant corner
+        # color when requested (the model often returns a near-solid backdrop).
+        if args.transparent:
+            key = hex_to_rgb(args.key_color) if args.key_color else image.getpixel((0, 0))[:3]
+            image = color_key_to_alpha(image, key, args.tolerance, PILImage)
+
+        if args.trim:
+            image, _ = trim_to_content(image, PILImage)
+
+        image.save(str(output_path), "PNG")
+
+    print(f"\nImage saved: {output_path.resolve()}")
+    if args.columns and args.rows and (args.columns > 1 or args.rows > 1):
+        print(
+            "Next: slice into frames with\n"
+            f"  phaser_sprite_asset.py sheet --image {output_path} "
+            f"--columns {args.columns} --rows {args.rows} "
+            f"--out-dir {output_path.with_suffix('')}-frames"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -446,8 +598,35 @@ def build_parser():
     g.add_argument("--prompt", "-p", required=True, help="Sprite/sheet/tileset description")
     g.add_argument("--filename", "-f", required=True, help="Output PNG path")
     g.add_argument("--input-image", "-i", help="Optional input image for edit/variation")
+    g.add_argument(
+        "--provider",
+        choices=["auto", "openai", "gemini"],
+        default="auto",
+        help="Image provider. 'auto' (default) prefers OpenAI when a key is present.",
+    )
+    g.add_argument("--model", help="Override the model id (e.g. gpt-image-1, "
+                   "gemini-3-pro-image-preview).")
     g.add_argument("--resolution", "-r", choices=["1K", "2K", "4K"], default="1K",
-                   help="Output resolution (default 1K)")
+                   help="[Gemini] Output resolution (default 1K)")
+    # OpenAI options
+    g.add_argument(
+        "--size",
+        choices=["1024x1024", "1536x1024", "1024x1536", "auto"],
+        default="1024x1024",
+        help="[OpenAI] Output size (square/landscape/portrait/auto).",
+    )
+    g.add_argument(
+        "--quality",
+        choices=["low", "medium", "high", "auto"],
+        default="high",
+        help="[OpenAI] Render quality.",
+    )
+    g.add_argument(
+        "--background",
+        choices=["transparent", "opaque", "auto"],
+        default="auto",
+        help="[OpenAI] Background; 'transparent' is ideal for sprites/icons.",
+    )
     g.add_argument("--style", help="Extra style clause (e.g. 'crisp pixel art, 32x32')")
     g.add_argument("--columns", type=int, default=0,
                    help="Spritesheet columns (adds grid-layout instructions)")
@@ -459,7 +638,8 @@ def build_parser():
     g.add_argument("--tolerance", type=int, default=24,
                    help="Color-key match tolerance per channel (default 24)")
     g.add_argument("--trim", action="store_true", help="Crop transparent margins after generation")
-    g.add_argument("--api-key", "-k", help="Gemini API key (overrides GEMINI_API_KEY)")
+    g.add_argument("--api-key", "-k", help="Gemini API key (overrides GEMINI_API_KEY / config)")
+    g.add_argument("--openai-key", help="OpenAI API key (overrides OPENAI_API_KEY / config)")
     g.set_defaults(func=cmd_generate)
 
     # --- sheet ---

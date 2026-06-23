@@ -1,15 +1,36 @@
-# Gemini Image API + Phaser Sprite Format Notes
+# Image Provider APIs + Phaser Sprite Format Notes
 
-These notes summarize the Gemini image API usage this skill relies on, plus the
-spritesheet and atlas formats Phaser 3 loads. The script combines a Gemini
-generation call with local Pillow processing (slice / pack / key-to-alpha / trim).
+These notes summarize the image-generation APIs this skill relies on, plus the
+spritesheet and atlas formats Phaser 3 loads. The script combines a provider
+generation call (OpenAI or Gemini) with local Pillow processing
+(slice / pack / key-to-alpha / trim). The local steps are provider-agnostic.
+
+## Providers and key resolution
+
+Select the backend with `--provider {auto,openai,gemini}` (default `auto` =
+OpenAI if a key is present, else Gemini). For each provider the key resolves in
+this order, and is never embedded in skill files or the shipped game client:
+
+1. `--api-key` (explicit flag)
+2. environment variable — `OPENAI_API_KEY` (OpenAI) or `GEMINI_API_KEY` (Gemini)
+3. a config file (KEY=value lines), searched:
+   `$GAME_SKILLS_ENV` → `./.env` → `~/.config/game-skills/.env` → `~/.game-skills.env`
+
+## OpenAI GPT-Image (`gpt-image-1`)
+
+- Source-art generator alternative to Gemini. Flags: `--model` (default
+  `gpt-image-1`), `--size {1024x1024,1536x1024,1024x1536,auto}`,
+  `--quality {low,medium,high,auto}`, and `--background {transparent,opaque,auto}`
+  (request `transparent` for sprites/icons/tiles to reduce post-key cleanup).
+- Returns a PNG that flows into the same slice/pack/key-to-alpha/trim pipeline as
+  Gemini output — no format differences downstream.
 
 ## Gemini Image API
 
 - SDK: `google-genai` (`from google import genai; from google.genai import types`).
-- Auth: `genai.Client(api_key=...)`. Key resolution order: `--api-key`, then the
-  `GEMINI_API_KEY` environment variable. Never embed the key in skill files or
-  the shipped game client.
+- Auth: `genai.Client(api_key=...)`. Key resolution follows the shared order above
+  using `GEMINI_API_KEY`. Never embed the key in skill files or the shipped game
+  client.
 - Model: `gemini-3-pro-image-preview`.
 - Call: `client.models.generate_content(model=..., contents=..., config=...)`.
 - `contents` is either the prompt string (text-to-image) or `[input_image, prompt]`
@@ -37,8 +58,9 @@ build-time step; outputs are saved to disk and committed/copied into the game's
 
 ## Transparency Enforcement (local)
 
-Gemini often returns a near-solid backdrop instead of true alpha. The script
-enforces transparency locally with Pillow:
+Gemini often returns a near-solid backdrop instead of true alpha (OpenAI
+`--background transparent` returns real alpha but a key-to-alpha pass still
+cleans fringing). The script enforces transparency locally with Pillow:
 
 - `--transparent` adds a "transparent background" clause to the prompt AND keys
   the chosen background color to alpha after generation.

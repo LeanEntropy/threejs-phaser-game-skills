@@ -7,14 +7,17 @@ description: "Generate, slice, pack, trim, and download 2D game art for Phaser 3
 
 ## Purpose
 
-Create production-oriented 2D game art, then prepare it for Phaser 3 games. This is the Phaser game system's art-generation layer; it uses Google's Gemini image API as the generator for character/object/enemy sprites, uniform-frame spritesheets, tilesets, and texture atlases, plus local Pillow (PIL) image processing for slicing grids into frames, packing frames into an atlas PNG + TexturePacker JSON, enforcing transparent backgrounds, and trimming dead space. There are no 3D models in 2D — the output is sliced PNG spritesheets and atlases that `this.load.spritesheet` and `this.load.atlas` consume directly.
+Create production-oriented 2D game art, then prepare it for Phaser 3 games. This is the Phaser game system's art-generation layer; it generates the source art for character/object/enemy sprites, uniform-frame spritesheets, tilesets, and texture atlases via OpenAI's GPT-Image (`gpt-image-1`) or Google's Gemini image API (select with `--provider {auto,openai,gemini}`, default `auto`), plus local Pillow (PIL) image processing for slicing grids into frames, packing frames into an atlas PNG + TexturePacker JSON, enforcing transparent backgrounds, and trimming dead space. The slicing, packing, key-to-alpha, and trim steps are provider-agnostic — they run identically on art from either backend. There are no 3D models in 2D — the output is sliced PNG spritesheets and atlases that `this.load.spritesheet` and `this.load.atlas` consume directly.
 
 ## API Key
 
-Never store API keys in skill files or client-side game code. The script checks:
+Never store API keys in skill files or client-side game code. The script resolves a key for the chosen provider in this order:
 
-1. `--api-key`
-2. `GEMINI_API_KEY`
+1. `--api-key` (explicit flag)
+2. environment variable — `OPENAI_API_KEY` (OpenAI) or `GEMINI_API_KEY` (Gemini)
+3. a config file (KEY=value lines), searched in order: `$GAME_SKILLS_ENV` → `./.env` → `~/.config/game-skills/.env` → `~/.game-skills.env`
+
+With `--provider auto` (default), OpenAI is used when `OPENAI_API_KEY` resolves, otherwise Gemini. Copy `.env.example` (repo root) to `.env` or `~/.config/game-skills/.env` to set keys via the config file. Source-art generation supports either provider; slicing/packing/trim is provider-agnostic.
 
 Step 0 before declaring the key unavailable:
 
@@ -28,7 +31,7 @@ For Codex installs:
 bash ~/.codex/skills/phaser-game-director/scripts/probe_asset_credentials.sh
 ```
 
-Paste the literal `GEMINI_API_KEY=SET|MISSING` output in the report. Do not conclude the key is unavailable from a plain non-interactive shell until this probe has sourced the user's shell profiles.
+Paste the literal `OPENAI_API_KEY=SET|MISSING` / `GEMINI_API_KEY=SET|MISSING` output in the report (the probe also checks the config file). Do not conclude the key is unavailable from a plain non-interactive shell until this probe has sourced the user's shell profiles.
 
 When the probe says SET but `phaser_sprite_asset.py` reports a missing key, the key is exported in an interactive-only profile (e.g. `~/.zshrc`). Wrap script invocations the same way the probe does:
 
@@ -36,7 +39,7 @@ When the probe says SET but `phaser_sprite_asset.py` reports a missing key, the 
 zsh -c 'source "$HOME/.zprofile" 2>/dev/null; source "$HOME/.zshrc" 2>/dev/null; python3 .../phaser_sprite_asset.py ...'
 ```
 
-Use the API only from local/server-side tooling. Image generation is a build-time step; never call Gemini from the shipped game client.
+Use the API only from local/server-side tooling. Image generation is a build-time step; never call OpenAI or Gemini from the shipped game client.
 
 ## Tool Script
 
@@ -144,7 +147,7 @@ Use `phaser-image-generator` before sprite generation when the asset benefits fr
 - Backgrounds, sky/horizon plates, parallax layers, menu/title art.
 - Logos, faction marks, item/ability/HUD icons, hazard signs, button skins, GUI panels.
 
-`phaser-image-generator` and this skill share the same Gemini provider and `GEMINI_API_KEY`. The division of labor: `phaser-image-generator` makes concept art, backgrounds, and standalone GUI/icon art; `phaser-sprite-generator` makes the in-game sprite/spritesheet/tileset/atlas pipeline (generate → slice → pack → transparent). Load `references/image-generator-workflows.md` for prompt patterns and the handoff before generating inputs.
+`phaser-image-generator` and this skill share the same providers (OpenAI `gpt-image-1` / Gemini) and key resolution (`OPENAI_API_KEY` / `GEMINI_API_KEY`, or the config file). The division of labor: `phaser-image-generator` makes concept art, backgrounds, and standalone GUI/icon art; `phaser-sprite-generator` makes the in-game sprite/spritesheet/tileset/atlas pipeline (generate → slice → pack → transparent). Load `references/image-generator-workflows.md` for prompt patterns and the handoff before generating inputs.
 
 ## Phaser Integration
 
@@ -166,9 +169,9 @@ Load `references/api-notes.md` for the full format tables. The short rule:
 
 ## Quality Rules
 
-- Improve the user's prompt with palette, silhouette readability, cell-uniformity, view angle, and game-use constraints before calling Gemini.
+- Improve the user's prompt with palette, silhouette readability, cell-uniformity, view angle, and game-use constraints before calling the image provider (OpenAI or Gemini).
 - Always request and enforce a transparent background for sprites (`--transparent`); key out the backdrop and `--trim` dead space so origins and collision boxes stay tight.
-- For animation strips, demand identical pivot, scale, and cell size per frame in the prompt — Gemini drift between frames is the main cause of jittery animations; regenerate rather than ship a wobbling cycle.
+- For animation strips, demand identical pivot, scale, and cell size per frame in the prompt — provider drift between frames is the main cause of jittery animations; regenerate rather than ship a wobbling cycle.
 - Keep one consistent palette across a sprite family; pass a shared `--style` clause and, when needed, an `--input-image` reference for color/style lock.
 - For tilesets, request orthographic/top-down tiles with seamless edges and no baked perspective or drop shadows that bleed across cells.
 - Prefer atlases over many separate spritesheets for memory and batch count; prefer one uniform sheet for a single simple animation.

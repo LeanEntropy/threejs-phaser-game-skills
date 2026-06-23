@@ -9,7 +9,7 @@ description: "Generate and edit 2D image assets for Phaser 3 games using Google'
 
 Create game-useful 2D assets and references for Phaser 3 projects. This skill is the image-generation layer for the Phaser game system: it produces concepts, sprite/tileset source art, backgrounds, parallax layers, decals, particle textures, and UI art that can be handed to `phaser-sprite-generator` for slicing into spritesheets and packing into texture atlases.
 
-Provider: Google's Gemini image API.
+Providers: OpenAI's GPT-Image (`gpt-image-1`) and Google's Gemini image API. Select with `--provider {auto,openai,gemini}` (default `auto` = OpenAI if a key is present, else Gemini).
 
 ## When To Use
 
@@ -26,12 +26,15 @@ For premium/AAA/showcase graphics work, generate at least one relevant image for
 
 ## API Key
 
-Never store API keys in skill files or browser/game code. The script checks:
+Never store API keys in skill files or browser/game code. The script resolves a key for the chosen provider in this order:
 
-1. `--api-key`
-2. `GEMINI_API_KEY`
+1. `--api-key` (explicit flag)
+2. environment variable — `OPENAI_API_KEY` (OpenAI) or `GEMINI_API_KEY` (Gemini)
+3. a config file (KEY=value lines), searched in order: `$GAME_SKILLS_ENV` → `./.env` → `~/.config/game-skills/.env` → `~/.game-skills.env`
 
-Before declaring the key unavailable in a `phaser-game-director` or `phaser-aaa-graphics-builder` workflow, run the director credential probe and paste its literal SET/MISSING output:
+With `--provider auto` (default), OpenAI is used when `OPENAI_API_KEY` resolves, otherwise Gemini. Copy `.env.example` (repo root) to `.env` or `~/.config/game-skills/.env` to set keys via the config file.
+
+Before declaring the key unavailable in a `phaser-game-director` or `phaser-aaa-graphics-builder` workflow, run the director credential probe and paste its literal SET/MISSING output (it reports `OPENAI_API_KEY` and `GEMINI_API_KEY`, and also checks the config file):
 
 ```bash
 bash ~/.codex/skills/phaser-game-director/scripts/probe_asset_credentials.sh
@@ -43,7 +46,7 @@ For Claude installs:
 bash ~/.claude/skills/phaser-game-director/scripts/probe_asset_credentials.sh
 ```
 
-If the probe says `GEMINI_API_KEY=SET` but the script sees no key, run through a shell that sources the user's profile:
+If the probe says the provider key is `SET` but the script sees no key, run through a shell that sources the user's profile:
 
 ```bash
 zsh -c 'source "$HOME/.zprofile" 2>/dev/null; source "$HOME/.zshrc" 2>/dev/null; uv run ~/.codex/skills/phaser-image-generator/scripts/generate_image.py --prompt "..." --filename assets/concepts/example.png'
@@ -73,11 +76,38 @@ uv run ~/.codex/skills/phaser-image-generator/scripts/generate_image.py \
   --resolution 2K
 ```
 
-Resolution mapping:
+Resolution mapping (Gemini, `--resolution`):
 
 - `1K`: quick concepts, icons, draft sheets, single small sprites.
 - `2K`: default production reference for sprite/tileset sources, backgrounds, UI panels.
 - `4K`: hero splash/title art, high-detail tileset sheets, large sky/background and parallax plates.
+
+### Provider selection and OpenAI options
+
+`--provider {auto,openai,gemini}` picks the backend (default `auto`). Gemini uses `--resolution {1K,2K,4K}`. OpenAI (`gpt-image-1`) uses its own flags:
+
+- `--model` (default `gpt-image-1`)
+- `--size {1024x1024,1536x1024,1024x1536,auto}`
+- `--quality {low,medium,high,auto}`
+- `--background {transparent,opaque,auto}` — `transparent` is ideal for sprites, icons, and decals.
+
+Generate with OpenAI, transparent background (great for an icon/decal/sprite source):
+
+```bash
+uv run ~/.codex/skills/phaser-image-generator/scripts/generate_image.py \
+  --provider openai --background transparent \
+  --prompt "crisp game UI ability badge for a lightning dash, centered, high contrast" \
+  --filename assets/ui/dash-badge.png --size 1024x1024 --quality high
+```
+
+Generate a wide OpenAI background plate:
+
+```bash
+uv run ~/.codex/skills/phaser-image-generator/scripts/generate_image.py \
+  --provider openai \
+  --prompt "wide parallax city skyline at dusk, layered depth, no foreground subject" \
+  --filename assets/backgrounds/city-dusk.png --size 1536x1024 --quality high
+```
 
 ## Prompt Patterns
 
